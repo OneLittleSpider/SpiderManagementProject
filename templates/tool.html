@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Project</title>
+    <link rel="stylesheet" type="text/css" href="static/tool.css">
+</head>
+<style>
+    body {
+ background-image: url('https://as2.ftcdn.net/v2/jpg/01/35/49/05/1000_F_135490522_9GD4FaP2KSNq3hHWtQiW5rwbRzvRaaqZ.jpg');
+
+}
+</style>
+
+<body>
+
+
+   <div id="header"> New Project Name</div>
+
+ <button id="return"> Return to Home Page</button>
+ <button id="create"> Add Task</button>
+
+   <!--don't know what's going on here, i need to change it.-->
+   {% for item in items %}
+                <div class="item">
+                    <h3><a href="{{ url_for('view_item', item_id=item.id) }}">{{ item.name }}</a></h3>
+                    <p>{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</p>
+                </div>
+            {% endfor %}
+
+<div class="table">
+    <table id="table">
+
+  <tr>
+    <th style="width:40%">Task</th>
+    <th style="width:10%">Owner</th>
+    <th style="width:10%">Due Date</th>
+   <th style="width:10%">Status</th>
+  <th style="width:30%">Details</th>
+  </tr>
+
+  <tr>
+    <td>Buy Domain Name</td>
+    <td>Spider</td>
+    <td>2/20/25</td>
+    <td>Started</td>
+      <td>For assignment details: link</td>
+  </tr>
+
+  <tr>
+    <td>Publish Website</td>
+    <td>Little</td>
+    <td>2/24/25</td>
+    <td>Not Started</td>
+    <td>Go to CnC for help</td>
+  </tr>
+</table>
+
+</div>
+
+
+
+</body>
+    <script type="text/javascript" src="static/tool.js"></script>
+</html>

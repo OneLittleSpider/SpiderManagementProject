@@ -1,0 +1,57 @@
+#header{
+font-weight:bold;
+  color:white;
+  font-size:60px;
+}
+
+#table{
+ font-size:25px;
+ text-align: center;
+ border-style: solid;
+ border-width: 8px;
+ border-color:white;
+ width: 90%;
+ margin: 10px auto;
+ background-color: rgba(255, 255, 255, 0.3);
+}
+
+#table th, #table td {
+    padding: 6px 10px;
+    border: 2px solid white;
+}
+
+#table th {
+    background-color: #241571;
+    color: white;
+}
+
+#create{
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 18px;
+  background-color: green;
+  font-weight:bold;
+}
+
+#create:hover {
+    background-color: darkgreen; /* Darker green on hover */
+}
+
+
+#return{
+color: black;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 18px;
+  background-color: white;
+  font-weight:bold;
+}
+
+#return:hover {
+    background-color: #f2f2f2;
+}
+
+

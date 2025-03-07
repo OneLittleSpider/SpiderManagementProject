@@ -1,0 +1,6 @@
+Flask
+flask==3.0.0
+gunicorn
+flask-sqlalchemy
+pymysql
+google-cloud-datastore==2.18.0
