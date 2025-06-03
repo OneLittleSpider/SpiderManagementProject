@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirm Reunion</title>
+  <style>
+    body {
+      background-image: url("/static/santaCruz3.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 10vh;
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 2rem 3rem;
+      border-radius: 12px;
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+      margin: 0.5rem 0;
+    }
+
+    label {
+      display: block;
+      margin-top: 1.5rem;
+      font-size: 1rem;
+    }
+
+    select {
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      width: 100%;
+    }
+
+    button {
+      margin-top: 1.5rem;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      font-weight: bold;
+      background-color: #ffffffcc;
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: white;
+    }
+
+    a {
+      display: block;
+      margin-top: 1.5rem;
+      color: white;
+      text-decoration: underline;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Confirm Reunion Time</h1>
+
+    <p><strong>Date:</strong> {{ day }}</p>
+    <p><strong>Time:</strong> {{ time }}</p>
+
+    <form action="{{ url_for('confirm') }}" method="post">
+      <input type="hidden" name="day" value="{{ day }}">
+      <input type="hidden" name="time" value="{{ time }}">
+
+      <label for="name">Who are you?</label>
+      <select name="name" id="name" required>
+        <option disabled selected value="">Select your name</option>
+        {% for name in names %}
+          <option value="{{ name }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit">✅ Confirm</button>
+    </form>
+
+    <a href="{{ url_for('home') }}">← Back to Home</a>
+  </div>
+</body>
+</html>

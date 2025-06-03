@@ -1,8 +1,8 @@
-Flask
-flask==3.0.0
+Flask==3.0.0
 gunicorn
-flask-sqlalchemy
-pymysql
-google-cloud-datastore==2.18.0
-google-api-python-client
-google-auth-oauthlib
+pytz
+google-auth==2.29.0
+google-auth-oauthlib==1.2.0
+google-api-python-client==2.126.0
+requests
+email-validator  # optional: for future email form checks

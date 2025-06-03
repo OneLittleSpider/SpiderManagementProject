@@ -13,5 +13,5 @@ handlers:
   script: auto
 
 
-  env_variables:
-    GOOGLE_CLOUD_PROJECT: "spiderproject-448620"
+env_variables:
+  GOOGLE_CLOUD_PROJECT: "stay-app-456917"

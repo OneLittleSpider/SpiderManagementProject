@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Available Times</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+    }
+
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.6);
+      height: 100vh;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+    }
+
+    .time-options {
+      max-width: 800px;
+      margin: 2rem auto;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      border-radius: 12px;
+    }
+
+    .time-options ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .time-options li {
+      margin: 1rem 0;
+    }
+
+    .time-options a {
+      display: inline-block;
+      background-color: transparent;
+      color: white;
+      border: 2px solid white;
+
+      padding: 0.7rem 1.2rem;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    }
+
+    .time-options a:hover {
+       background-color: rgba(255, 255, 255, 0.3); /* 30% transparent white */
+       border-color: white;
+       color: white;
+    }
+
+    .return-button {
+       display: inline-block;
+       background-color: transparent;
+       border: 2px solid white;
+       color: white;
+       padding: 0.6rem 1.2rem;
+       border-radius: 8px;
+       text-decoration: none;
+       font-weight: bold;
+       transition: background-color 0.3s, color 0.3s;
+    }
+
+    .return-button:hover {
+      background-color: white;
+      color: #333;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <h1>Pick a Time to Reunite!</h1>
+    <div class="time-options">
+      <ul>
+        {% for day, time in available %}
+          <li>
+            <a href="{{ url_for('confirm', day=day, time=time) }}">
+              {{ day }} | {{ time }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+     <div style="text-align: center; margin-top: 2rem;">
+          <a href="{{ url_for('home') }}" class="return-button">← Return to Home</a>
+     </div>
+  </div>
+
+  <script>
+    const images = [
+    "3f63452af69428490f23b980d1525d5a.jpg",
+    "5d57bd4e9e0badb5cc081efc4615ae32.jpg",
+    "28c1dc4bd429a274001b0dacd6373422.jpg",
+    "98ef6bcd3143c30442f64e744906e83.jpeg",
+    "853bf21f01e2a826057a0cbcbd0f042cc.jpeg",
+    "987eb4b10b419a61840db56d2fe0602e.jpg",
+    "1896c6f28f64a343bd45e2357e7415c8.jpg",
+    "2025.03.07-167-LindsayBaloun-BadmintonMEDIADAY-1V1A3876.jpg",
+    "2657CA11-0864-4959-BC47-19A52A7F284C.JPG",
+    "66353520bb21cb5a2e6fc1709a9dd918.jpg",
+    "71693282-77C0-4BE3-A702-EFBA84C29F9E.JPG",
+    "AATP0151.jpg",
+    "ANMP0003.jpg", "ANMP0096.jpg", "ANMP0142.jpg", "ANMP0184.jpg",
+    "ANMP0211.jpg", "ANMP0279.jpg",
+    "b0e5be190fc52a660238c351f0f48c20.jpg",
+    "b71ba611a674f23193353e9468ab9929.jpg",
+    "c9d3302bb8dd5cc47e85baa4e8c28e35.jpg",
+    "Canon_Canon EOS Rebel T7_2024-11-03_10006822912.jpg",
+    "Canon_Canon EOS Rebel T7_2024-11-03_10060562432.jpg",
+    "Canon_Canon EOS Rebel T7_2024-11-03_10251370496.jpg",
+    "IMG_0096.jpeg", "IMG_0117.jpeg", "IMG_0175.JPG", "IMG_0247.jpeg",
+    "img_0268.jpg", "IMG_0281.jpeg", "IMG_0426.JPG", "IMG_0559.JPG",
+    "img_0575.jpg", "img_0592.jpg", "IMG_0737.jpeg", "IMG_0953.jpeg",
+    "IMG_0972.jpeg", "IMG_1156.jpeg", "IMG_1562.jpeg", "IMG_1583.jpeg",
+    "IMG_1706.jpeg", "IMG_1940.jpeg", "IMG_1961.JPG", "IMG_1967.JPG",
+    "IMG_1973.JPG", "IMG_1974.JPG", "IMG_2304.jpeg", "IMG_2365.jpeg",
+    "IMG_2399.jpeg", "IMG_2617.jpeg", "IMG_2623.jpeg", "IMG_2644.jpeg",
+    "IMG_2664.jpeg", "IMG_2710.jpeg", "IMG_2984.jpeg", "IMG_3064.PNG",
+    "IMG_3319.PNG", "IMG_3631.jpeg", "IMG_3698.jpeg", "IMG_3856.jpeg",
+    "IMG_3908.jpeg", "IMG_3972.jpeg", "IMG_3990.jpeg", "IMG_4027.jpeg",
+    "IMG_4264.jpeg", "IMG_4599.jpeg", "IMG_5069.JPG", "IMG_5482.jpeg",
+    "IMG_6638.JPG", "IMG_6701.jpeg", "IMG_7074.JPG", "IMG_7090.jpeg",
+    "IMG_7126.jpeg", "IMG_8413.jpeg", "IMG_8500.JPG", "IMG_8532.JPG",
+    "IMG_8636.jpeg", "IMG_9232.jpeg", "IMG_9524.JPG", "IMG_9558.jpeg",
+    "IMG_9638.jpeg", "IMG_9754.jpeg", "SUNP0065.JPG", "SUNP0078.JPG",
+    "SUNP0159.JPG"
+  ];
+
+  images.sort(() => Math.random() - 0.5);
+
+   let index = 0;
+
+  // ✅ Preload all images once at startup
+  function preloadImages() {
+    images.forEach(filename => {
+      const img = new Image();
+      img.src = `/static/combinedPhoto/${filename}`;
+    });
+  }
+
+  // ✅ Rotate background image
+  function rotateBackground() {
+    document.body.style.backgroundImage = `url('/static/combinedPhoto/${images[index]}')`;
+    index = (index + 1) % images.length;
+  }
+
+  // 🚀 Run preload once at page load
+  preloadImages();
+
+  // 🚀 Start background rotation
+  rotateBackground();
+  setInterval(rotateBackground, 4500);
+  </script>
+</body>
+</html>

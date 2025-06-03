@@ -1,103 +1,156 @@
-#Below are all the imports for this project
-from flask import Flask, redirect, url_for, session, request
-from flask import render_template_string
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build
+from flask import Flask, render_template
+import smtplib
+from email.mime.text import MIMEText
+from quickstart import get_mutual_blocks
 import os
-import pathlib
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+import pytz
+import datetime
 
-
-#Create Flask application instance,sets up the whole framework so we can define routes and serve pages
 app = Flask(__name__)
 
-# ！！might need to change: use a strong random key in real projects
-app.secret_key = "your_secret_key"
-
-# This is the path to my client_secret.json that has password/access to my google data
-CLIENT_SECRETS_FILE = "client_secret.json"
-
-#scope that request "read only" access from google calendar
-SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
-REDIRECT_URI = "http://localhost:4999/oauth2callback"
-
-
 @app.route("/")
-def index():
-    # 1️⃣ Check if we have OAuth credentials in the session, if not, direct to asking for access
-    if "credentials" not in session:
-        return '<a href="/authorize">Connect to Google Calendar</a>'
+def home():
+    return render_template("home.html")
 
-    # 2️⃣ Rebuild a Credentials object from what we stored in session
-    creds = Credentials.from_authorized_user_info(session["credentials"])
-
-    # 3️⃣ Create a Google Calendar API client
-    service = build("calendar", "v3", credentials=creds)
-
-    # 4️⃣ Fetch the next 10 events from the user's primary calendar
-    events_result = service.events().list(calendarId='primary', maxResults=10).execute()
-    events = events_result.get("items", [])
-
-    # 5️⃣ Build a tiny HTML page listing those events
-    html = "<h1>Your Upcoming Events</h1><ul>"
-    for event in events:
-        html += f"<li>{event.get('summary')} - {event.get('start', {}).get('dateTime')}</li>"
-    html += "</ul><a href='/logout'>Logout</a>"
-
-    # 6️⃣ Return that HTML (Flask will send it to the browser)
-    return render_template_string(html)
+@app.route("/scheduling")
+def scheduling():
 
 
-#this route: set OAuth up for getting permission and send permission request
-@app.route("/authorize")
-def authorize():
-    #flow is a part of the OAuth library that helps me manage OAuth
-    flow = Flow.from_client_secrets_file(
-        #The following 3 lines gives it my credentials, the scope details, and where to redirect user after getting the permission.
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
-    auth_url, state = flow.authorization_url(prompt="consent")
-    session["state"] = state
-    return redirect(auth_url)
+    token_path = os.path.join(os.path.dirname(__file__), "token_user1.json")
+    blocks = get_mutual_blocks(token_file=token_path)
 
-#this route: after oauth get permission,
-@app.route("/oauth2callback")
-def oauth2callback():
-    state = session["state"]
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        state=state,
-        redirect_uri=REDIRECT_URI
-    )
+    available = [
+        (start.strftime('%A, %b %d'), f"{start.strftime('%I:%M %p')} to {end.strftime('%I:%M %p')}")
+        for start, end in blocks
+    ]
 
-    #send permission proof to google, get new token, and saved the new token
-    flow.fetch_token(authorization_response=request.url)
+    return render_template("scheduling.html", available=available)
 
-    creds = flow.credentials
+@app.route("/confirm", methods=["GET", "POST"])
+def confirm():
+    import os, json
+    from flask import request
 
-    #session is a flask object that acts like a storage space. we store the following info there.
-    session["credentials"] = {
-        "token": creds.token,
-        "refresh_token": creds.refresh_token,
-        "token_uri": creds.token_uri,
-        "client_id": creds.client_id,
-        "client_secret": creds.client_secret,
-        "scopes": creds.scopes
+    token_path = os.path.join(os.path.dirname(__file__), "token_user1.json")
+    names = ["LittleSpider", "JoJo", "Jally"]
+
+    if request.method == "POST":
+        day = request.form.get("day")
+        time = request.form.get("time")
+    else:
+        day = request.args.get("day")
+        time = request.args.get("time")
+
+    # ✅ Simulate email sending on initial GET if flagged
+    send_flag = request.args.get("send_emails") == "yes"
+    if send_flag:
+        print(f"\n📧 Sending confirmation links for {day} {time}:")
+        base_url = "/confirm"
+        for name in names:
+            link = f"{base_url}?day={day}&time={time}&name={name}"
+            print(f"  ✉️  To {name}: http://127.0.0.1:5000{link}")
+
+    if not day or not time:
+        return "Missing day or time info.", 400
+
+    slot_key = f"{day} | {time}"
+    confirm_file = os.path.join("/tmp", "confirmations.json")
+
+
+    # If submitting the form
+    if request.method == "POST":
+        name = request.form.get("name")
+        if name not in names:
+            return "Unknown name.", 400
+
+        # Load or create confirmation data
+        if os.path.exists(confirm_file):
+            with open(confirm_file, "r") as f:
+                data = json.load(f)
+        else:
+            data = {}
+
+        # Add this name to confirmations
+        if slot_key not in data:
+            data[slot_key] = []
+
+        if name not in data[slot_key]:
+            data[slot_key].append(name)
+
+
+        # Save updated data
+        with open(confirm_file, "w") as f:
+            json.dump(data, f)
+
+        # ✅ If everyone confirmed
+        if sorted(data[slot_key]) == sorted(names):
+            # 🗓️ Schedule the event for real!
+            # Parse exact datetime object from slot_key
+            tz = pytz.timezone("America/Los_Angeles")
+            day_str = slot_key.split(" | ")[0].strip()
+            start_time_str = slot_key.split(" | ")[1].split(" to ")[0].strip()
+
+            dt_str = f"{day_str} {start_time_str}"
+            current_year = datetime.datetime.now().year
+            dt_str = f"{day} {current_year} {start_time_str}"
+            start_dt = datetime.datetime.strptime(dt_str, "%A, %b %d %Y %I:%M %p")
+
+            end_dt = start_dt + datetime.timedelta(hours=1)
+
+            # Now pass actual datetime objects
+            create_event_for_slot(start_dt, end_dt)
+
+            return f"✅ All users confirmed! Event for {slot_key} has been scheduled!"
+
+        # 🕒 If still waiting
+        missing = [n for n in names if n not in data[slot_key]]
+        return f"👍 Thanks {name}, waiting on: {', '.join(missing)}"
+
+    # If GET: show the form
+    return render_template("confirm.html", day=day, time=time, names=names)
+
+
+def send_email(recipient, subject, body):
+    sender_email = "jianj@jnclighting.com"
+    app_password = "Cheetah1224"  # <- From Gmail App Password
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+
+    msg = MIMEText(body, "html")  # allows clickable links
+    msg["Subject"] = subject
+    msg["From"] = sender_email
+    msg["To"] = recipient
+
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(sender_email, app_password)
+        server.sendmail(sender_email, recipient, msg.as_string())
+
+
+def create_event_for_slot(start_dt, end_dt):
+    from google.oauth2.credentials import Credentials
+    from googleapiclient.discovery import build
+
+    event = {
+        'summary': f'Stay Reunion 🎉',
+        'start': {'dateTime': start_dt.isoformat(), 'timeZone': 'America/Los_Angeles'},
+        'end': {'dateTime': end_dt.isoformat(), 'timeZone': 'America/Los_Angeles'},
     }
 
-    return redirect(url_for("index"))
+    token_path = os.path.join(os.path.dirname(__file__), "token_user1.json")
+    creds = Credentials.from_authorized_user_file(token_path, ['https://www.googleapis.com/auth/calendar'])
+    service = build("calendar", "v3", credentials=creds)
 
-#remove credential access when user logs out
-@app.route("/logout")
-def logout():
-    #remove line
-    session.pop("credentials", None)
-    return redirect("/")
+    calendar_list = service.calendarList().list().execute()
+    for cal in calendar_list['items']:
+        if cal['accessRole'] in ['writer', 'owner']:
+            cal_id = cal['id']
+            created_event = service.events().insert(calendarId=cal_id, body=event).execute()
+            print(f"📅 Event added to {cal_id} → {created_event.get('htmlLink')}")
+
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=4999)
-
+    app.run(debug=True)
